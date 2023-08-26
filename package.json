@@ -1,0 +1,26 @@
+{
+  "name": "mazz-selfbot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "author": "Christopher M.",
+  "dependencies": {
+    "@discordjs/voice": "^0.16.0",
+    "@types/node": "^20.5.6",
+    "axios": "^1.4.0",
+    "discord.js-selfbot-v13": "^2.14.10",
+    "dotenv": "^16.3.1",
+    "libsodium-wrappers": "^0.7.11"
+  },
+  "devDependencies": {
+    "@tsconfig/node16": "^16.1.1",
+    "@typescript-eslint/eslint-plugin": "^6.4.1",
+    "@typescript-eslint/parser": "^6.4.1",
+    "eslint": "^8.47.0",
+    "typescript": "^5.2.2"
+  },
+  "scripts": {
+    "lint": "npx eslint .",
+    "build": "npx tsc"
+  }
+}

@@ -1,0 +1,5 @@
+bin
+.env
+.idea
+.DS_Store
+node_modules
