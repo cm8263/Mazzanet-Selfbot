@@ -2,4 +2,5 @@ bin
 .env
 .idea
 .DS_Store
+src/config.json
 node_modules
