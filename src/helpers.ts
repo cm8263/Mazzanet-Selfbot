@@ -4,7 +4,6 @@ import {Volunteer} from "./types/volunteer";
 import config from "./config.json";
 import {Capcode} from "./types/capcode";
 import {ConsoleType} from "./types/consoleType";
-import {Page} from "./types/page";
 import {ExternalPage} from "./types/externalPage";
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -28,7 +27,7 @@ const setActivity = (client: Discord.Client) => {
 		.addButton("Scoresby Pages", "https://mazzanet.net.au/cfa/?filter=SCOR&reg=13&magickey=pagerstream"));
 };
 
-const consoleMessage = (message: any, type: ConsoleType = ConsoleType.Log) => {
+const consoleMessage = (message: string, type: ConsoleType = ConsoleType.Log) => {
 	message = `${new Date().toLocaleString("en-AU")} // ${message}`;
 
 	switch (type) {
@@ -49,7 +48,7 @@ const consoleMessage = (message: any, type: ConsoleType = ConsoleType.Log) => {
 			break;
 
 	}
-}
+};
 
 const toTitleCase = (string: string) => string.replace(
 	/\w\S*/g,
@@ -77,9 +76,9 @@ const checkLatestPageForVolunteer = async (volunteer: Volunteer): Promise<Extern
 		})
 		.catch((error: AxiosError) => {
 			consoleMessage(`There was an error with ${error.config?.url}.`, ConsoleType.Error);
-			consoleMessage(error, ConsoleType.Error);
+			console.log(error);
 			return null;
 		});
-}
+};
 
 export {sleep, setActivity, consoleMessage, toTitleCase, checkLatestPageForVolunteer};

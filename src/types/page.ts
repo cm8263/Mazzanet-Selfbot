@@ -2,16 +2,19 @@ import {createAudioPlayer, createAudioResource, joinVoiceChannel, StreamType, Vo
 import Discord, {
 	BaseGuildVoiceChannel,
 	DMChannel,
-	GuildChannel, PartialGroupDMChannel,
+	PartialGroupDMChannel,
 	TextChannel,
 	VoiceBasedChannel
 } from "discord.js-selfbot-v13";
-import {sleep, toTitleCase} from "../helpers";
+import {consoleMessage, toTitleCase} from "../helpers";
 import {Nature} from "./nature";
 import config from "../config.json";
 import {Capcode} from "./capcode";
 import OpenAI from "openai";
 import {Volunteer} from "./volunteer";
+import {ConsoleType} from "./consoleType";
+import {CustomVoiceTypes} from "./customVoiceTypes";
+import {SummaryObject} from "./summaryObject";
 
 const capcodes: Capcode[] = config.capcodes;
 const replacements: {[key: string]: string}  = {
@@ -103,10 +106,10 @@ class Page {
 	private readonly timestamp: Date;
 	private readonly localTimestamp: string;
 	private readonly message: string;
-	private readonly mapUrl: string | null
+	private readonly mapUrl: string | null;
 
 	private summary: string | null = null;
-	private summaryObject: any | null = null;
+	private summaryObject: SummaryObject | null = null;
 
 	constructor(client: Discord.Client, openai: OpenAI, nature: Nature, capcode: string, timestamp: Date, localTimestamp: string, message: string, mapUrl: string | null = null) {
 		this.client = client;
@@ -128,34 +131,44 @@ class Page {
 	}
 
 	public generateSummaries = async () => {
-		const summary = await this.openai.chat.completions.create({
-			messages: [
-				{ role: "system", content: config.openAiSystem },
-				{ role: "user", content: this.message }
-			],
-			model: "gpt-3.5-turbo",
-			frequency_penalty: 0,
-			presence_penalty: 0,
-			temperature: 0,
-			top_p: 1
-		});
+		try {
+			const summary = await this.openai.chat.completions.create({
+				messages: [
+					{ role: "system", content: config.openAiSystem },
+					{ role: "user", content: this.message }
+				],
+				model: "gpt-3.5-turbo",
+				frequency_penalty: 0,
+				presence_penalty: 0,
+				temperature: 0,
+				top_p: 1
+			});
 
-		this.summary = summary.choices[0].message.content;
+			this.summary = summary.choices[0].message.content;
+		} catch (error) {
+			consoleMessage("Error while generating summary.", ConsoleType.Warn);
+			console.log(error);
+		}
 
-		const summaryObject = await this.openai.chat.completions.create({
-			messages: [
-				{ role: "system", content: config.openAiSystemJs },
-				{ role: "user", content: this.message }
-			],
-			model: "gpt-3.5-turbo",
-			frequency_penalty: 0,
-			presence_penalty: 0,
-			temperature: 0,
-			top_p: 1
-		});
+		try {
+			const summaryObject = await this.openai.chat.completions.create({
+				messages: [
+					{ role: "system", content: config.openAiSystemJs },
+					{ role: "user", content: this.message }
+				],
+				model: "gpt-3.5-turbo",
+				frequency_penalty: 0,
+				presence_penalty: 0,
+				temperature: 0,
+				top_p: 1
+			});
 
-		this.summaryObject = summaryObject.choices[0].message.content !== null ? JSON.parse(summaryObject.choices[0].message.content) : null;
-	}
+			this.summaryObject = summaryObject.choices[0].message.content !== null ? JSON.parse(summaryObject.choices[0].message.content) : null;
+		} catch (error) {
+			consoleMessage("Error while generating summary object.", ConsoleType.Warn);
+			console.log(error);
+		}
+	};
 
 	public broadcast = async (volunteer: Volunteer, voiceChannel: VoiceBasedChannel) => {
 		const player = createAudioPlayer();
@@ -163,14 +176,10 @@ class Page {
 		let connection: VoiceConnection;
 		let channel: DMChannel | BaseGuildVoiceChannel | PartialGroupDMChannel;
 
-		console.log(voiceChannel.type)
-
-		switch (voiceChannel.type) {
-			// @ts-ignore
+		switch (voiceChannel.type as CustomVoiceTypes) {
 			case "DM":
-			// @ts-ignore
 			case "GROUP_DM":
-				channel = voiceChannel as DMChannel;
+				channel = (voiceChannel as unknown) as DMChannel;
 
 				connection = await channel.call();
 				break;
@@ -208,9 +217,7 @@ class Page {
 		});
 
 		player.play(resource);
-		player.addListener("stateChange", (_, newOne) => {
-			if (newOne.status == "idle") connection.destroy();
-		});
+		player.addListener("stateChange", (_, state) => state.status == "idle" && connection.destroy());
 	};
 
 	public publish = async () => {
@@ -225,15 +232,13 @@ class Page {
 			})
 			.setColor("RED")
 			.setDescription(this.summary ?? this.message)
-			.setTitle("Rubbish Fire")
+			.setTitle((this.summaryObject && this.summaryObject["Call Nature"]) ?? "Fire Call")
 			.setProvider({ name: "View Details", url: `https://mazzanet.net.au/cfa/?inc=${this.message.split(" ").pop()}&magickey=pagerstream` });
 
-		if (this.mapUrl !== null) {
-			embed.setImage(this.mapUrl);
-		}
+		this.mapUrl !== null && embed.setImage(this.mapUrl);
 
-		await recordsChannel.send({embeds: [embed]});
-	}
+		await recordsChannel.send({ embeds: [embed] });
+	};
 }
 
 export {Page};

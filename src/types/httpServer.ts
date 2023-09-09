@@ -56,35 +56,36 @@ class HttpServer {
 			}
 
 			switch (url.pathname) {
-			case "/newPage":
-				const message = data["message"] as string | undefined;
+				case "/newPage": {
+					const message = data["message"] as string | undefined;
 
-				if (message === undefined) {
-					this.badRequest(response);
-					return;
+					if (message === undefined) {
+						this.badRequest(response);
+						return;
+					}
+
+					response.writeHead(204);
+					response.end();
+
+					const page = new Page(
+						this.client,
+						this.openai,
+						(data["nature"] as unknown) as Nature,
+						data["capcode"] as string,
+						(data["timestamp"] as unknown) as Date,
+						data["localTimestamp"] as string,
+						data["message"] as string
+					);
+
+					//await page.broadcast();
+					await page.publish();
+
+					break;
 				}
 
-				response.writeHead(204);
-				response.end();
-
-				const page = new Page(
-					this.client,
-					this.openai,
-					(data["nature"] as unknown) as Nature,
-					data["capcode"] as string,
-					(data["timestamp"] as unknown) as Date,
-					data["localTimestamp"] as string,
-					data["message"] as string
-				);
-
-				//await page.broadcast();
-				await page.publish();
-
-				break;
-
-			default:
-				this.badRequest(response);
-				break;
+				default:
+					this.badRequest(response);
+					break;
 			}
 		});
 	};
