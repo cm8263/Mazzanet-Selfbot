@@ -1,4 +1,4 @@
-import {Client, VoiceBasedChannel} from "discord.js-selfbot-v13";
+import {Call, Client, DMChannel, PartialGroupDMChannel, VoiceBasedChannel} from "discord.js-selfbot-v13";
 import * as dotenv from "dotenv";
 import {checkLatestPageForVolunteer, consoleMessage, setActivity} from "./helpers";
 import {HttpServer} from "./types/httpServer";
@@ -31,6 +31,13 @@ const main = async () => {
 };
 
 client.on("ready", async () => await main());
+
+client.on("callCreate", async (call: Call) => {
+	const channel = client.channels.cache.get(call.channelId) as DMChannel | PartialGroupDMChannel;
+	const connection = await channel.call({ ring: false });
+
+	connection.destroy();
+});
 
 client.on("voiceStateUpdate", async (oldState, newState) => {
 	const userId = oldState.id;
