@@ -210,7 +210,7 @@ class Page {
 
 		message += ". Thanks for your understanding.";
 
-		const url = `https://api.voicerss.org/?key=${process.env.VOICERSS_API_KEY}&c=MP3&hl=en-us&f=12khz_8bit_stereo&v=Mary&r=-1&src=${message}`;
+		const url = `https://api.voicerss.org/?key=${process.env.VOICERSS_API_KEY}&c=OGG&hl=en-us&f=12khz_8bit_stereo&v=Mary&r=-1&src=${message}`;
 
 		const resource = createAudioResource(url, {
 			inputType: StreamType.Arbitrary

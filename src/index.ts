@@ -32,12 +32,12 @@ const main = async () => {
 
 client.on("ready", async () => await main());
 
-client.on("callCreate", async (call: Call) => {
+/*client.on("callCreate", async (call: Call) => {
 	const channel = client.channels.cache.get(call.channelId) as DMChannel | PartialGroupDMChannel;
 	const connection = await channel.call({ ring: false });
 
 	connection.destroy();
-});
+});*/
 
 client.on("voiceStateUpdate", async (oldState, newState) => {
 	const userId = oldState.id;
@@ -53,18 +53,28 @@ client.on("voiceStateUpdate", async (oldState, newState) => {
 	if (!oldChannel && newChannel) {
 		volunteerPositions[volunteer.id] = newChannel;
 	} else if (oldChannel && !newChannel) {
+		consoleMessage(`${volunteer.name} left a channel, beginning check!`);
+
 		if (Object.prototype.hasOwnProperty.call(volunteerPositions, volunteer.id)) delete volunteerPositions[volunteer.id];
 
 		const latestPage = await checkLatestPageForVolunteer(volunteer);
 
 		if (!latestPage) return;
 
+		if (!latestPage){
+			consoleMessage("No page found.");
+			return;
+		}
+
 		const date = new Date(latestPage.timestamp);
 		const minutesSinceCall = Math.floor((Math.abs(date.getTime() - new Date().getTime()) / 1000) / 60);
 
-		if (minutesSinceCall > 3) return;
+		if (minutesSinceCall > 3) {
+			consoleMessage(`Last page more than three minutes old : ${minutesSinceCall} minutes.`);
+			return;
+		}
 
-		consoleMessage(`Volunteer ${volunteer.name} just disconnected from ${oldChannel}, and we detected a new call. Creating page!`, ConsoleType.Info);
+		consoleMessage(`New call detected, creating page!`, ConsoleType.Info);
 		consoleMessage(`Page Message >> ${latestPage.message}`);
 
 		const page = new Page(
