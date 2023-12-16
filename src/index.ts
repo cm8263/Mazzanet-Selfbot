@@ -1,4 +1,4 @@
-import {Call, Client, DMChannel, PartialGroupDMChannel, VoiceBasedChannel} from "discord.js-selfbot-v13";
+import {Client, VoiceBasedChannel} from "discord.js-selfbot-v13";
 import * as dotenv from "dotenv";
 import {checkLatestPageForVolunteer, consoleMessage, setActivity} from "./helpers";
 import {HttpServer} from "./types/httpServer";
@@ -61,7 +61,7 @@ client.on("voiceStateUpdate", async (oldState, newState) => {
 
 		if (!latestPage) return;
 
-		if (!latestPage){
+		if (!latestPage) {
 			consoleMessage("No page found.");
 			return;
 		}
@@ -74,7 +74,7 @@ client.on("voiceStateUpdate", async (oldState, newState) => {
 			return;
 		}
 
-		consoleMessage(`New call detected, creating page!`, ConsoleType.Info);
+		consoleMessage("New call detected, creating page!", ConsoleType.Info);
 		consoleMessage(`Page Message >> ${latestPage.message}`);
 
 		const page = new Page(
@@ -90,7 +90,7 @@ client.on("voiceStateUpdate", async (oldState, newState) => {
 
 		await page.generateSummaries();
 		await page.publish();
-		await page.broadcast(volunteer, oldChannel);
+		//await page.broadcast(volunteer, oldChannel);
 	}
 });
 
